@@ -66,7 +66,8 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_gray(JNIEnv *env, job
     //进行霍夫圆变换
     std::vector<Vec3f> circles;
     //HoughCircles(midImage,circles,HOUGH_GRADIENT,1.5f,10,200,100,0,0);
-    HoughCircles(midImage,circles,HOUGH_GRADIENT,1.5f,10,200,120,0,0);
+    HoughCircles(midImage,circles,HOUGH_GRADIENT,1.5f,10,200,150,300,0);
+    std::cout<<"当前圆的个数"<<circles.size()<<std::endl;
     //画出圆
     for(size_t i=0;i<circles.size();i++){
         Point center(cvRound(circles[i][0]),cvRound(circles[i][1]));

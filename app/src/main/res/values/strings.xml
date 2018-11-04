@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">GreyLevelToConcentrationCamera</string>
+    <string name="captureString">拍照</string>
+    <string name="greyLevelString">灰度值:</string>
+    <string name="concentrationString">浓度</string>
+</resources>

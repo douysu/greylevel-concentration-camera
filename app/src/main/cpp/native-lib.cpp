@@ -58,30 +58,19 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_gray(JNIEnv *env, job
         return 0;
     }
     Mat srcImage(h, w, CV_8UC4, (unsigned char *) cbuf);
-    //临时变量和目标图
-    Mat midImage,dstImage;
-    //转换灰度图并图像平滑
-    cvtColor(srcImage,midImage,COLOR_BGR2GRAY);
-    GaussianBlur(midImage,midImage,Size(9,9),2,2);
-    //进行霍夫圆变换
-    std::vector<Vec3f> circles;
-    //HoughCircles(midImage,circles,HOUGH_GRADIENT,1.5f,10,200,100,0,0);
-    HoughCircles(midImage,circles,HOUGH_GRADIENT,1.5f,10,200,150,300,0);
-    std::cout<<"当前圆的个数"<<circles.size()<<std::endl;
-    //画出圆
-    for(size_t i=0;i<circles.size();i++){
-        Point center(cvRound(circles[i][0]),cvRound(circles[i][1]));
-        int radius=cvRound(circles[i][2]);
-        //绘制圆心
-        circle(srcImage,center,3,Scalar(0,255,0),-1,8,0);
-        //绘制圆轮廓
-        circle(srcImage,center,radius,Scalar(155,50,255),3,8,0);
-    }
+    Mat dst = Mat::zeros(srcImage.size(), srcImage.type());
+    Mat mask = Mat::zeros(srcImage.size(),CV_8U);
+
+    Point circleCenter(mask.cols / 2, mask.rows / 2);
+    int radius = min(mask.cols, mask.rows)/2;
+    circle(mask, circleCenter, radius, Scalar(255),-1);
+    srcImage.copyTo(dst, mask);
+    uchar *ptr = dst.data;
     //创建新的结果数组
     int size = w * h;
     jintArray result = env->NewIntArray(size);
     //将结果设置到新的数组
-    env->SetIntArrayRegion(result, 0, size, cbuf);
+    env->SetIntArrayRegion(result, 0, size, (const jint *) ptr);
     //释放中间数组
     env->ReleaseIntArrayElements(buf, cbuf, 0);
     return result;

@@ -64,11 +64,6 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapMeanGray(JNI
     Mat mbgra(info.height, info.width, CV_8UC4, pixels);
     //复制图像
     Mat dst = mbgra.clone();
-
-
-
-
-
     Mat gray, mat_mean, mat_stddev;
     cvtColor(dst, gray, CV_RGB2GRAY); // 转换为灰度图，gray
     meanStdDev(gray, mat_mean, mat_stddev);//计算均值和标准偏差
@@ -81,26 +76,23 @@ extern "C"
 JNIEXPORT jintArray JNICALL
 Java_terry_com_greyleveltoconcentrationcamera_MainActivity_gray(JNIEnv *env, jobject instance,
                                                                 jintArray buf, jint w, jint h) {
+    //得到数据数组
     jint *cbuf = env->GetIntArrayElements(buf, JNI_FALSE );
     if (cbuf == NULL) {
         return 0;
     }
-
+    //转换为OpenCV Mat可处理
     Mat imgData(h, w, CV_8UC4, (unsigned char *) cbuf);
+    
 
-    uchar* ptr = imgData.ptr(0);
-    for(int i = 0; i < w*h; i ++){
-        //计算公式：Y(亮度) = 0.299*R + 0.587*G + 0.114*B
-        //对于一个int四字节，其彩色值存储方式为：BGRA
-        int grayScale = (int)(ptr[4*i+2]*0.299 + ptr[4*i+1]*0.587 + ptr[4*i+0]*0.114);
-        ptr[4*i+1] = grayScale;
-        ptr[4*i+2] = grayScale;
-        ptr[4*i+0] = grayScale;
-    }
 
+
+    //创建新的结果数组
     int size = w * h;
     jintArray result = env->NewIntArray(size);
+    //将结果设置到新的数组
     env->SetIntArrayRegion(result, 0, size, cbuf);
+    //释放中间数组
     env->ReleaseIntArrayElements(buf, cbuf, 0);
     return result;
 }

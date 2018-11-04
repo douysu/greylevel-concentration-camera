@@ -82,31 +82,3 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapMeanGray(JNI
     int average = graylevel(bf, dst, center, radius);
     return average;
 }
-
-extern "C"
-JNIEXPORT jintArray JNICALL
-Java_terry_com_greyleveltoconcentrationcamera_MainActivity_gray(JNIEnv *env, jobject instance,
-                                                                jintArray buf, jint w, jint h) {
-    //得到图像结果
-    jint *cbuf = env->GetIntArrayElements(buf, JNI_FALSE );
-    if (cbuf == NULL) {
-        return 0;
-    }
-    Mat srcImage(h, w, CV_8UC4, (unsigned char *) cbuf);
-
-    Mat dst = Mat::zeros(srcImage.size(), srcImage.type());
-    Mat mask = Mat::zeros(srcImage.size(),CV_8U);
-    Point circleCenter(mask.cols / 2, mask.rows / 2);
-    int radius = 800;
-    circle(mask, circleCenter, radius, Scalar(255),-1);
-    srcImage.copyTo(dst, mask);
-    uchar *ptr = dst.data;
-    //创建新的结果数组
-    int size = w * h;
-    jintArray result = env->NewIntArray(size);
-    //将结果设置到新的数组
-    env->SetIntArrayRegion(result, 0, size, (const jint *) ptr);
-    //释放中间数组
-    env->ReleaseIntArrayElements(buf, cbuf, 0);
-    return result;
-}

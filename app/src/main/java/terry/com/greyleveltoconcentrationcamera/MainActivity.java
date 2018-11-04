@@ -99,10 +99,25 @@ public class MainActivity extends Activity {
             } else if (requestCode == CROP_PHOTO) {
                 //从临时照片文件的位置加载照片
                 Bitmap bitmap = BitmapFactory.decodeFile(StoreFileUtil.tempFile().getAbsolutePath());
+                //计算当前bitmap高度和宽度
+                int w = bitmap.getWidth(), h = bitmap.getHeight();
+                //创建像素数组
+                int[] pix = new int[w * h];
+                //得到像素值
+                bitmap.getPixels(pix, 0, w, 0, 0, w, h);
+                //生成灰度结果
+                int [] resultPixes=gray(pix,w,h);
+                //创建bitmap临时变量
+                Bitmap result = Bitmap.createBitmap(w,h, Bitmap.Config.RGB_565);
+                //将结果像素存入
+                result.setPixels(resultPixes, 0, w, 0, 0,w, h);
+
+
                 //将图片设置给ImageView显示
-                imageView.setImageBitmap(bitmap);
-                double greyLevl = getBitmapMeanGray(bitmap);
+                imageView.setImageBitmap(result);
                 //计算灰度值
+                double greyLevl = getBitmapMeanGray(bitmap);
+
                 double concentration = -145.7491 +1.27 * greyLevl;
                 if (concentration < 0) {
                     concentration = 0;
@@ -124,6 +139,8 @@ public class MainActivity extends Activity {
      * which is packaged with this application.
      */
 
-    public native double getBitmapMeanGray(Bitmap bitmap);
+    public native double getBitmapMeanGray(Bitmap bitmap);//计算灰度值的方法
+
+    public native int[] gray(int [] buf,int w,int h);//尝试方法
 
 }

@@ -1,40 +1,16 @@
 #include <jni.h>
-#include <string.h>
-#include <iostream>
+
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
 #include <android/bitmap.h>
 #include <android/log.h>
 
+#include <string.h>
+#include <iostream>
+#include <vector>
+
 char APPNAME[] = {"app"};
 using namespace cv;
-
-extern "C"
-JNIEXPORT jintArray JNICALL
-Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getGrayImage(JNIEnv *env, jclass type,
-                                                                   jintArray pixels_, jint w,
-                                                                   jint h) {
-    jint *pixels = env->GetIntArrayElements(pixels_, NULL);
-    // TODO
-    if(pixels==NULL){
-        return NULL;
-    }
-    cv::Mat imgData(h, w, CV_8UC4, pixels);
-    uchar *ptr = imgData.ptr(0);
-    for (int i = 0; i < w * h; i++) {
-        int grayScale = (int) (ptr[4 * i + 2] * 0.299 + ptr[4 * i + 1] * 0.587
-                               + ptr[4 * i + 0] * 0.114);
-        ptr[4 * i + 1] = (uchar) grayScale;
-        ptr[4 * i + 2] = (uchar) grayScale;
-        ptr[4 * i + 0] = (uchar) grayScale;
-    }
-
-    int size = w * h;
-    jintArray result = env->NewIntArray(size);
-    env->SetIntArrayRegion(result, 0, size, pixels);
-    env->ReleaseIntArrayElements(pixels_, pixels, 0);
-    return result;
-}
 
 extern "C"
 JNIEXPORT jdouble JNICALL
@@ -76,17 +52,30 @@ extern "C"
 JNIEXPORT jintArray JNICALL
 Java_terry_com_greyleveltoconcentrationcamera_MainActivity_gray(JNIEnv *env, jobject instance,
                                                                 jintArray buf, jint w, jint h) {
-    //得到数据数组
+    //得到图像结果
     jint *cbuf = env->GetIntArrayElements(buf, JNI_FALSE );
     if (cbuf == NULL) {
         return 0;
     }
-    //转换为OpenCV Mat可处理
-    Mat imgData(h, w, CV_8UC4, (unsigned char *) cbuf);
-    
-
-
-
+    Mat srcImage(h, w, CV_8UC4, (unsigned char *) cbuf);
+    //临时变量和目标图
+    Mat midImage,dstImage;
+    //转换灰度图并图像平滑
+    cvtColor(srcImage,midImage,COLOR_BGR2GRAY);
+    GaussianBlur(midImage,midImage,Size(9,9),2,2);
+    //进行霍夫圆变换
+    std::vector<Vec3f> circles;
+    //HoughCircles(midImage,circles,HOUGH_GRADIENT,1.5f,10,200,100,0,0);
+    HoughCircles(midImage,circles,HOUGH_GRADIENT,1.5f,10,200,120,0,0);
+    //画出圆
+    for(size_t i=0;i<circles.size();i++){
+        Point center(cvRound(circles[i][0]),cvRound(circles[i][1]));
+        int radius=cvRound(circles[i][2]);
+        //绘制圆心
+        circle(srcImage,center,3,Scalar(0,255,0),-1,8,0);
+        //绘制圆轮廓
+        circle(srcImage,center,radius,Scalar(155,50,255),3,8,0);
+    }
     //创建新的结果数组
     int size = w * h;
     jintArray result = env->NewIntArray(size);

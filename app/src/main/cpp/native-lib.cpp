@@ -67,23 +67,20 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapMeanGray(JNI
     }
     //读取bitmap到Mat
     Mat mbgra(info.height, info.width, CV_8UC4, pixels);
-    //对图像进行圆处理
-    Mat circleImage = Mat::zeros(mbgra.size(), mbgra.type());
-    Mat mask = Mat::zeros(mbgra.size(),CV_8U);
-
-    Point circleCenter(mask.cols / 2, mask.rows / 2);
-    int radius = 600;
-
-    circle(mask, circleCenter, radius, Scalar(255),-1);
-    mbgra.copyTo(circleImage, mask);
-    //复制图像
-    Mat dst = circleImage.clone();
-    Mat gray, mat_mean, mat_stddev;
-    cvtColor(dst, gray, CV_RGB2GRAY); // 转换为灰度图，gray
-    meanStdDev(gray, mat_mean, mat_stddev);//计算均值和标准偏差
-    double m;
-    m = mat_mean.at<double>(0, 0);
-    return m;
+    //彩色图像转化成灰度图
+    Mat src_gray;
+    cvtColor(mbgra, src_gray, COLOR_BGR2GRAY);
+    //对灰度图像进行双边滤波
+    Mat bf;
+    bilateralFilter(src_gray, bf, 15, 15*2, 7.5f);
+    //结果图像
+    Mat dst(src_gray.size(), src_gray.type());
+    dst = Scalar::all(0);
+    //计算平均灰度
+    Point center(cvRound(mbgra.cols / 2), cvRound(mbgra.rows / 2));
+    int radius = cvRound(300);
+    int average = graylevel(bf, dst, center, radius);
+    return average;
 }
 
 extern "C"
@@ -100,8 +97,7 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_gray(JNIEnv *env, job
     Mat dst = Mat::zeros(srcImage.size(), srcImage.type());
     Mat mask = Mat::zeros(srcImage.size(),CV_8U);
     Point circleCenter(mask.cols / 2, mask.rows / 2);
-    //int radius = min(mask.cols, mask.rows)/2;
-    int radius = 600;
+    int radius = 800;
     circle(mask, circleCenter, radius, Scalar(255),-1);
     srcImage.copyTo(dst, mask);
     uchar *ptr = dst.data;

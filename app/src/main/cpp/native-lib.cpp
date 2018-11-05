@@ -11,34 +11,18 @@
 
 char APPNAME[] = {"app"};
 using namespace cv;
-
-int graylevel(Mat image, Mat dst, Point cen, int r)//求取圆形区域内的平均灰度值
+//dst为传入的灰色图像
+int graylevel(Mat dst, Point p1,int rectSize)//求取圆形区域内的平均灰度值
 {
     int graysum = 0, n = 0;
-
-    for (int i = (cen.y - r); i <= (cen.y + r); ++i)
+    for (int i = p1.y; i <= (p1.y+2*rectSize); ++i)
     {
-        uchar *data = image.ptr<uchar>(i);
-        for (int j = (cen.x - r); j <= (cen.x + r); ++j) {
-            double d = (i - cen.y) * (i - cen.y) + (j - cen.x) * (j - cen.x);
-            if (d < r * r) {
+        uchar *data = dst.ptr<uchar>(i);
+        for (int j =  p1.y; j <= ( p1.y+2*rectSize); ++j) {
                 ++n;
                 graysum += (int) data[j];
-            }
         }
     }
-
-    for (int i = (cen.y - r); i <= (cen.y + r); ++i)
-    {
-        uchar *temp = dst.ptr<uchar>(i);
-        for (int j = (cen.x - r); j <= (cen.x + r); ++j) {
-            double d = (i - cen.y) * (i - cen.y) + (j - cen.x) * (j - cen.x);
-            if (d < r * r) {
-                temp[j] = (int) (graysum / n);
-            }
-        }
-    }
-
     return (graysum / n);
 }
 extern "C"
@@ -70,15 +54,16 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapMeanGray(JNI
     //彩色图像转化成灰度图
     Mat src_gray;
     cvtColor(mbgra, src_gray, COLOR_BGR2GRAY);
-    //对灰度图像进行双边滤波
-    Mat bf;
-    bilateralFilter(src_gray, bf, 15, 15*2, 7.5f);
-    //结果图像
-    Mat dst(src_gray.size(), src_gray.type());
-    dst = Scalar::all(0);
     //计算平均灰度
+    int rectSize=50;
+    /*
+     * p1 --------
+     *            |
+     *    ------- |
+     * */
+    //左上角坐标
     Point center(cvRound(mbgra.cols / 2), cvRound(mbgra.rows / 2));
-    int radius = cvRound(200);
-    int average = graylevel(bf, dst, center, radius);
+    Point p1(cvRound(center.x-rectSize),cvRound(center.y-rectSize));
+    int average = graylevel( src_gray, p1,rectSize);
     return average;
 }

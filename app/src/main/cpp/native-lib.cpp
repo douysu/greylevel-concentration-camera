@@ -16,7 +16,7 @@ int graylevel(Mat image, Mat dst, Point cen, int r)//求取圆形区域内的平
 {
     int graysum = 0, n = 0;
 
-    for (int i = (cen.y - r); i <= (cen.y + r); ++i)//访问矩形框内的像素值
+    for (int i = (cen.y - r); i <= (cen.y + r); ++i)
     {
         uchar *data = image.ptr<uchar>(i);
         for (int j = (cen.x - r); j <= (cen.x + r); ++j) {
@@ -28,7 +28,7 @@ int graylevel(Mat image, Mat dst, Point cen, int r)//求取圆形区域内的平
         }
     }
 
-    for (int i = (cen.y - r); i <= (cen.y + r); ++i)//画出圆，圆内像素值为平均灰度值
+    for (int i = (cen.y - r); i <= (cen.y + r); ++i)
     {
         uchar *temp = dst.ptr<uchar>(i);
         for (int j = (cen.x - r); j <= (cen.x + r); ++j) {
@@ -78,7 +78,7 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapMeanGray(JNI
     dst = Scalar::all(0);
     //计算平均灰度
     Point center(cvRound(mbgra.cols / 2), cvRound(mbgra.rows / 2));
-    int radius = cvRound(300);
+    int radius = cvRound(200);
     int average = graylevel(bf, dst, center, radius);
     return average;
 }

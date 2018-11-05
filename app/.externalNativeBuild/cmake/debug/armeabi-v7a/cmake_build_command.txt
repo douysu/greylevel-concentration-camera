@@ -1,0 +1,15 @@
+Executable : D:\Android\sdk\cmake\3.6.4111459\bin\cmake.exe
+arguments : 
+-HC:\Users\Douzi\Desktop\GreyLevelToConcentrationCamera\app
+-BC:\Users\Douzi\Desktop\GreyLevelToConcentrationCamera\app\.externalNativeBuild\cmake\debug\armeabi-v7a
+-DANDROID_ABI=armeabi-v7a
+-DANDROID_PLATFORM=android-23
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=C:\Users\Douzi\Desktop\GreyLevelToConcentrationCamera\app\build\intermediates\cmake\debug\obj\armeabi-v7a
+-DCMAKE_BUILD_TYPE=Debug
+-DANDROID_NDK=D:\Android\android-ndk-r16b
+-DCMAKE_CXX_FLAGS=-std=c++11 -frtti -fexceptions -std=c++11 -frtti -fexceptions
+-DCMAKE_TOOLCHAIN_FILE=D:\Android\android-ndk-r16b\build\cmake\android.toolchain.cmake
+-DCMAKE_MAKE_PROGRAM=D:\Android\sdk\cmake\3.6.4111459\bin\ninja.exe
+-GAndroid Gradle - Ninja
+jvmArgs : 
+

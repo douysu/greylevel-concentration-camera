@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -83,9 +84,11 @@ public class MainActivity extends Activity {
            if (requestCode == CROP_PHOTO) {
                 //从临时照片文件的位置加载照片
                 Bitmap bitmap = BitmapFactory.decodeFile(StoreFileUtil.tempFile().getAbsolutePath());
-                //计算当前bitmap高度和宽度
+               //计算当前bitmap高度和宽度
                 int w = bitmap.getWidth(), h = bitmap.getHeight();
-                //创建像素数组
+//                int rectSize=300;
+//                Bitmap cropPic=Bitmap.createBitmap(bitmap,w/2-rectSize,h/2-rectSize,2*rectSize,2*rectSize,new Matrix(),true);
+               //创建像素数组
                 int[] pix = new int[w * h];
                 //得到像素值
                 bitmap.getPixels(pix, 0, w, 0, 0, w, h);
@@ -94,12 +97,11 @@ public class MainActivity extends Activity {
                 //创建bitmap临时变量
                 Bitmap grayBitmap = Bitmap.createBitmap(w,h, Bitmap.Config.RGB_565);
                 //将结果像素存入
-               grayBitmap.setPixels(grayResultPixes, 0, w, 0, 0,w, h);
+                grayBitmap.setPixels(grayResultPixes, 0, w, 0, 0,w, h);
                 //将图片设置给ImageView显示
                 imageView.setImageBitmap(grayBitmap);
                 //计算灰度值
                 double greyLevl = getBitmapGray(bitmap);
-
                 double concentration = -145.7491 +1.27 * greyLevl;
                 if (concentration < 0) {
                     concentration = 0;
@@ -107,7 +109,6 @@ public class MainActivity extends Activity {
                 if (concentration >100) {
                     concentration = 100;
                 }
-
                 greyLevelTextView.setText(String.format("%.2f", greyLevl));
                 concentrationTextView.setText(String.format("%.2f", concentration));
             }

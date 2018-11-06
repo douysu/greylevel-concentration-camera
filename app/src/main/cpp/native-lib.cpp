@@ -11,7 +11,7 @@
 
 char APPNAME[] = {"app"};
 using namespace cv;
-
+//计算圆形灰度值的方法
 int graylevel(Mat image, Mat dst, Point cen, int r)//求取圆形区域内的平均灰度值
 {
     int graysum = 0, n = 0;
@@ -41,9 +41,13 @@ int graylevel(Mat image, Mat dst, Point cen, int r)//求取圆形区域内的平
 
     return (graysum / n);
 }
+/*
+ *  计算灰度值
+ * @param bitmap 拍照图像
+ * */
 extern "C"
 JNIEXPORT jdouble JNICALL
-Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapMeanGray(JNIEnv *env,
+Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapGray(JNIEnv *env,
                                                                              jobject instance,
                                                                              jobject bitmap) {
 
@@ -82,10 +86,15 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapMeanGray(JNI
     int average = graylevel(bf, dst, center, radius);
     return average;
 }
-
+/*
+ *  生成圆形图像
+ * @param buf 拍摄图像int数组
+ * @param w 宽度
+ * @param h 高度
+ * */
 extern "C"
 JNIEXPORT jintArray JNICALL
-Java_terry_com_greyleveltoconcentrationcamera_MainActivity_gray(JNIEnv *env, jobject instance,
+Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getCirclePicture(JNIEnv *env, jobject instance,
                                                                 jintArray buf, jint w, jint h) {
     //得到图像结果
     jint *cbuf = env->GetIntArrayElements(buf, JNI_FALSE );
@@ -93,11 +102,10 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_gray(JNIEnv *env, job
         return 0;
     }
     Mat srcImage(h, w, CV_8UC4, (unsigned char *) cbuf);
-
     Mat dst = Mat::zeros(srcImage.size(), srcImage.type());
     Mat mask = Mat::zeros(srcImage.size(),CV_8U);
     Point circleCenter(mask.cols / 2, mask.rows / 2);
-    int radius = 800;
+    int radius = 400;
     circle(mask, circleCenter, radius, Scalar(255),-1);
     srcImage.copyTo(dst, mask);
     uchar *ptr = dst.data;

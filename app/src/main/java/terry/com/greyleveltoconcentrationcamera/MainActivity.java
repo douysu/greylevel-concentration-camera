@@ -64,8 +64,6 @@ public class MainActivity extends Activity {
                 if(v == button){
                     //调用系统相机的Intent
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    //临时照片文件的位置
-
                     //将照片文件的位置传入intent
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
                     //发出intent启动系统相机
@@ -82,24 +80,7 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-            if (requestCode == REQUEST_ORIGINAL) {
-//                Intent intent = new Intent("com.android.camera.action.CROP"); //剪裁
-//                intent.setDataAndType(uri, "image/*");
-//                intent.putExtra("scale", true);
-//                //设置宽高比例
-//                intent.putExtra("aspectX", 1);
-//                intent.putExtra("aspectY", 1);
-//                //设置裁剪图片宽高
-//                intent.putExtra("outputX", 340);
-//                intent.putExtra("outputY", 340);
-//                intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-//                Toast.makeText(MainActivity.this, "剪裁图片", Toast.LENGTH_SHORT).show();
-//                //广播刷新相册
-//                Intent intentBc = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-//                intentBc.setData(uri);
-//                this.sendBroadcast(intentBc);
-//                startActivityForResult(intent, CROP_PHOTO);
-            } else if (requestCode == CROP_PHOTO) {
+           if (requestCode == CROP_PHOTO) {
                 //从临时照片文件的位置加载照片
                 Bitmap bitmap = BitmapFactory.decodeFile(StoreFileUtil.tempFile().getAbsolutePath());
                 //计算当前bitmap高度和宽度
@@ -108,18 +89,16 @@ public class MainActivity extends Activity {
                 int[] pix = new int[w * h];
                 //得到像素值
                 bitmap.getPixels(pix, 0, w, 0, 0, w, h);
-                //生成灰度结果
-                int [] resultPixes=gray(pix,w,h);
+                //得到圆形图像
+                int [] grayResultPixes=getCirclePicture(pix,w,h);
                 //创建bitmap临时变量
-                Bitmap result = Bitmap.createBitmap(w,h, Bitmap.Config.RGB_565);
+                Bitmap grayBitmap = Bitmap.createBitmap(w,h, Bitmap.Config.RGB_565);
                 //将结果像素存入
-                result.setPixels(resultPixes, 0, w, 0, 0,w, h);
-
-
+               grayBitmap.setPixels(grayResultPixes, 0, w, 0, 0,w, h);
                 //将图片设置给ImageView显示
-                imageView.setImageBitmap(result);
+                imageView.setImageBitmap(grayBitmap);
                 //计算灰度值
-                double greyLevl = getBitmapMeanGray(bitmap);
+                double greyLevl = getBitmapGray(bitmap);
 
                 double concentration = -145.7491 +1.27 * greyLevl;
                 if (concentration < 0) {
@@ -135,15 +114,13 @@ public class MainActivity extends Activity {
         }
     }
 
-
-
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
 
-    public native double getBitmapMeanGray(Bitmap bitmap);//计算灰度值的方法
+    public native double getBitmapGray(Bitmap bitmap);//计算灰度值的方法
 
-    public native int[] gray(int [] buf,int w,int h);//尝试方法
+    public native int[] getCirclePicture(int [] buf,int w,int h);//尝试方法
 
 }

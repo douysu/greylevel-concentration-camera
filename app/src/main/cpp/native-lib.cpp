@@ -36,6 +36,33 @@ int graylevel(Mat srcImage, Point center, int r)//求取圆形区域内的平均
     }
     return (graysum / pixCircleNumber);
 }
+
+int avgGray(int(*p), Mat img) {
+
+    //读入原图片，并获取长宽
+    int length = img.rows;
+    int width = img.cols;
+    //建立一个全是0的图片掩膜
+    Mat imgM(length, width, CV_8UC1, Scalar(0));
+    Point points[1][4];
+    points[0][0] = Point(p[0], p[1]);
+    points[0][1] = Point(p[2], p[3]);
+    points[0][2] = Point(p[4], p[5]);
+    points[0][3] = Point(p[6], p[7]);
+    //设定传入点的个数
+    int npt[] = { 4 };
+    //将四个点围成的区域像素变为1
+    const Point *pt[1] = { points[0] };
+    fillPoly(imgM, pt, npt, 1, Scalar(1));
+    //将图片与掩膜对应相乘,得到只有区域部分非零的图像
+    Mat reginImg = img.mul(imgM);
+    //求出来四边形区域内这些像素值的总和。
+    Scalar theSum = sum(reginImg);
+    double theSumDouble = theSum.val[0]; //因为求和后是Scalar类型的数据，是含有一个4维数组的结构体，所以需要转化这个sum为double类型。
+    int theNum = countNonZero(reginImg);   //求出这个四边形区域内有多少个像素值。
+    int theAvg = theSumDouble / theNum;
+    return theAvg;
+}
 /*
  *  计算灰度值
  * @param bitmap 拍照图像
@@ -66,18 +93,30 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapGray(JNIEnv 
     }
     //读取bitmap到Mat
     Mat srcImage(info.height, info.width, CV_8UC4, pixels);
-    //彩色图像转化成灰度图
-    Mat src_gray;
-    cvtColor(srcImage, src_gray, COLOR_BGR2GRAY);
-    //对灰度图像进行双边滤波
-    const int kvalue = 15;//双边滤波邻域大小
-    Mat bf;
-    bilateralFilter(src_gray, bf, kvalue, kvalue*2, kvalue/2);
-    //计算平均灰度
-    Point center(cvRound(bf.cols / 2), cvRound(bf.rows / 2));
-    int radius = cvRound(300);
-    int average = graylevel(bf, center, radius);
-    return average;
+    Point center(cvRound(srcImage.cols / 2), cvRound(srcImage.rows / 2));
+    int rectLength=100;
+    int pointCoor[4][2]={
+            {center.x-rectLength,center.y-rectLength},
+            {center.x+rectLength,center.y-rectLength},
+            {center.x+rectLength,center.y+rectLength},
+            {center.x-rectLength,center.y+rectLength},
+                        };
+    int points[8] = { pointCoor[0][0], pointCoor[0][1], pointCoor[1][0], pointCoor[1][1],
+                      pointCoor[2][0], pointCoor[2][1], pointCoor[3][0], pointCoor[3][1]};
+    int theAvgGray = avgGray(points, srcImage);
+    return theAvgGray;
+//    //彩色图像转化成灰度图
+//    Mat src_gray;
+//    cvtColor(srcImage, src_gray, COLOR_BGR2GRAY);
+//    //对灰度图像进行双边滤波
+//    const int kvalue = 15;//双边滤波邻域大小
+//    Mat bf;
+//    bilateralFilter(src_gray, bf, kvalue, kvalue*2, kvalue/2);
+//    //计算平均灰度
+//    Point center(cvRound(bf.cols / 2), cvRound(bf.rows / 2));
+//    int radius = cvRound(300);
+//    int average = graylevel(bf, center, radius);
+//    return average;
 }
 /*
  *  生成圆形图像

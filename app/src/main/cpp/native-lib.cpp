@@ -11,34 +11,26 @@
 
 char APPNAME[] = {"app"};
 using namespace cv;
-//计算圆形灰度值的方法
-int graylevel(Mat image, Mat dst, Point cen, int r)//求取圆形区域内的平均灰度值
+/*
+ *  计算圆内灰度值方法
+ * @param src_gray 灰度图像
+ * @param cen 圆中心
+ * @param r 圆半径
+ * */
+int graylevel(Mat src_gray, Point center, int r)//求取圆形区域内的平均灰度值
 {
     int graysum = 0, n = 0;
-
-    for (int i = (cen.y - r); i <= (cen.y + r); ++i)//访问矩形框内的像素值
+    for (int i = (center.y - r); i <= (center.y + r); ++i)//遍历圆内像素
     {
-        uchar *data = image.ptr<uchar>(i);
-        for (int j = (cen.x - r); j <= (cen.x + r); ++j) {
-            double d = (i - cen.y) * (i - cen.y) + (j - cen.x) * (j - cen.x);
+        uchar *data = src_gray.ptr<uchar>(i);
+        for (int j = (center.x - r); j <= (center.x + r); ++j) {
+            double d = (i - center.y) * (i - center.y) + (j - center.x) * (j - center.x);
             if (d < r * r) {
                 ++n;
                 graysum += (int) data[j];
             }
         }
     }
-
-    for (int i = (cen.y - r); i <= (cen.y + r); ++i)//画出圆，圆内像素值为平均灰度值
-    {
-        uchar *temp = dst.ptr<uchar>(i);
-        for (int j = (cen.x - r); j <= (cen.x + r); ++j) {
-            double d = (i - cen.y) * (i - cen.y) + (j - cen.x) * (j - cen.x);
-            if (d < r * r) {
-                temp[j] = (int) (graysum / n);
-            }
-        }
-    }
-
     return (graysum / n);
 }
 /*
@@ -74,16 +66,10 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapGray(JNIEnv 
     //彩色图像转化成灰度图
     Mat src_gray;
     cvtColor(mbgra, src_gray, COLOR_BGR2GRAY);
-    //对灰度图像进行双边滤波
-    Mat bf;
-    bilateralFilter(src_gray, bf, 15, 15*2, 7.5f);
-    //结果图像
-    Mat dst(src_gray.size(), src_gray.type());
-    dst = Scalar::all(0);
     //计算平均灰度
     Point center(cvRound(mbgra.cols / 2), cvRound(mbgra.rows / 2));
     int radius = cvRound(300);
-    int average = graylevel(bf, dst, center, radius);
+    int average = graylevel(src_gray, center, radius);
     return average;
 }
 /*
@@ -101,13 +87,15 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getCirclePicture(JNIE
     if (cbuf == NULL) {
         return 0;
     }
-    Mat srcImage(h, w, CV_8UC4, (unsigned char *) cbuf);
-    Mat dst = Mat::zeros(srcImage.size(), srcImage.type());
-    Mat mask = Mat::zeros(srcImage.size(),CV_8U);
+    Mat srcImage(h, w, CV_8UC4, (unsigned char *) cbuf);//源图像
+    Mat dst = Mat::zeros(srcImage.size(), srcImage.type());//结果图像
+    Mat mask = Mat::zeros(srcImage.size(),CV_8U);//掩码
+    //得到圆形处理图像
     Point circleCenter(mask.cols / 2, mask.rows / 2);
     int radius = 400;
     circle(mask, circleCenter, radius, Scalar(255),-1);
     srcImage.copyTo(dst, mask);
+
     uchar *ptr = dst.data;
     //创建新的结果数组
     int size = w * h;

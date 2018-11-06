@@ -21,32 +21,16 @@ int graylevel(Mat srcImage, Point center, int r)//求取圆形区域内的平均
 {
     int graysum = 0;
     int pixCircleNumber = 0;
-//    for (int row = (center.y - r); row <= (center.y + r); row++)//遍历圆内像素
-//    {
-//        for (int col = (center.x - r); col <= (center.x + r); ++col) {
-//            double d = (row - center.y) * (row - center.y) + (col - center.x) * (col - center.x);
-//            if(d < r * r){//三通道且在圆内
-//                //得到像素值
-//                int b = srcImage.at<Vec3b>(row, col)[0];
-//                int g = srcImage.at<Vec3b>(row, col)[1];
-//                int r = srcImage.at<Vec3b>(row, col)[2];
-//                //计算平均灰度值
-//                int gray=(b+g+r)/3;
-//                //像素数自增
-//                ++pixCircleNumber;
-//                graysum += (int) gray;
-//            }
-//        }
-//    }
-    for (int row = (center.y - r); row <= (center.y + r); row++)//遍历圆内像素
+    for(int i = (center.y - r); i <= (center.y + r); ++i)//访问矩形框内的像素值
     {
-        uchar* data  = srcImage.ptr<uchar>(row);
-        for (int col = (center.x - r); col <= (center.x + r); ++col) {
-            double d = (row - center.y) * (row - center.y) + (col - center.x) * (col - center.x);
-            if(d < r * r){//三通道且在圆内
-                //像素数自增
+        uchar* data = srcImage.ptr<uchar>(i);
+        for(int j = (center.x - r); j <= (center.x + r); ++j)
+        {
+            double d = (i-center.y)*(i-center.y) + (j-center.x)*(j-center.x);
+            if(d < r*r)
+            {
                 ++pixCircleNumber;
-                graysum += (int)data[col];
+                graysum += (int)data[j];
             }
         }
     }
@@ -85,10 +69,14 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapGray(JNIEnv 
     //彩色图像转化成灰度图
     Mat src_gray;
     cvtColor(srcImage, src_gray, COLOR_BGR2GRAY);
+    //对灰度图像进行双边滤波
+    const int kvalue = 15;//双边滤波邻域大小
+    Mat bf;
+    bilateralFilter(src_gray, bf, kvalue, kvalue*2, kvalue/2);
     //计算平均灰度
-    Point center(cvRound(src_gray.cols / 2), cvRound(src_gray.rows / 2));
+    Point center(cvRound(bf.cols / 2), cvRound(bf.rows / 2));
     int radius = cvRound(300);
-    int average = graylevel(src_gray, center, radius);
+    int average = graylevel(bf, center, radius);
     return average;
 }
 /*
@@ -114,7 +102,6 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getCirclePicture(JNIE
     int radius = 400;
     circle(mask, circleCenter, radius, Scalar(255),-1);
     srcImage.copyTo(dst, mask);
-
     uchar *ptr = dst.data;
     //创建新的结果数组
     int size = w * h;

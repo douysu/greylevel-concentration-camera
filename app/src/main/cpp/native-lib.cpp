@@ -11,6 +11,7 @@
 
 char APPNAME[] = {"app"};
 using namespace cv;
+<<<<<<< HEAD
 /*
  *  计算圆内灰度值方法
  * @param src_gray 灰度图像
@@ -35,6 +36,21 @@ int graylevel(Mat srcImage, Point center, int r)//求取圆形区域内的平均
         }
     }
     return (graysum / pixCircleNumber);
+=======
+//dst为传入的灰色图像
+int graylevel(Mat dst, Point p1,int rectSize)//求取圆形区域内的平均灰度值
+{
+    int graysum = 0, n = 0;
+    for (int i = p1.y; i <= (p1.y+2*rectSize); ++i)
+    {
+        uchar *data = dst.ptr<uchar>(i);
+        for (int j =  p1.y; j <= ( p1.y+2*rectSize); ++j) {
+                ++n;
+                graysum += (int) data[j];
+        }
+    }
+    return (graysum / n);
+>>>>>>> 9dd4643fc2533bd4d7bde49850ab5032ee8169b9
 }
 /*
  *  计算灰度值
@@ -65,6 +81,7 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getBitmapGray(JNIEnv 
         __android_log_print(ANDROID_LOG_VERBOSE, APPNAME,"AndroidBitmap_lockPixels() failed ! error=%d", ret);
     }
     //读取bitmap到Mat
+<<<<<<< HEAD
     Mat srcImage(info.height, info.width, CV_8UC4, pixels);
     //计算平均灰度
     Mat src_gray;
@@ -107,3 +124,22 @@ Java_terry_com_greyleveltoconcentrationcamera_MainActivity_getCirclePicture(JNIE
     env->ReleaseIntArrayElements(buf, cbuf, 0);
     return result;
 }
+=======
+    Mat mbgra(info.height, info.width, CV_8UC4, pixels);
+    //彩色图像转化成灰度图
+    Mat src_gray;
+    cvtColor(mbgra, src_gray, COLOR_BGR2GRAY);
+    //计算平均灰度
+    int rectSize=50;
+    /*
+     * p1 --------
+     *            |
+     *    ------- |
+     * */
+    //左上角坐标
+    Point center(cvRound(mbgra.cols / 2), cvRound(mbgra.rows / 2));
+    Point p1(cvRound(center.x-rectSize),cvRound(center.y-rectSize));
+    int average = graylevel( src_gray, p1,rectSize);
+    return average;
+}
+>>>>>>> 9dd4643fc2533bd4d7bde49850ab5032ee8169b9

@@ -81,6 +81,7 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
+<<<<<<< HEAD
            if (requestCode == CROP_PHOTO) {
                 //从临时照片文件的位置加载照片
                 Bitmap bitmap = BitmapFactory.decodeFile(StoreFileUtil.tempFile().getAbsolutePath());
@@ -100,6 +101,13 @@ public class MainActivity extends Activity {
                 grayBitmap.setPixels(grayResultPixes, 0, w, 0, 0,w, h);
                 //将图片设置给ImageView显示
                 imageView.setImageBitmap(grayBitmap);
+=======
+             if (requestCode == CROP_PHOTO) {
+                //从临时照片文件的位置加载照片
+                Bitmap bitmap = BitmapFactory.decodeFile(StoreFileUtil.tempFile().getAbsolutePath());
+                //将图片设置给ImageView显示
+                imageView.setImageBitmap(bitmap);
+>>>>>>> 9dd4643fc2533bd4d7bde49850ab5032ee8169b9
                 //计算灰度值
                 double greyLevl = getBitmapGray(bitmap);
                 double concentration = -145.7491 +1.27 * greyLevl;
@@ -122,6 +130,9 @@ public class MainActivity extends Activity {
 
     public native double getBitmapGray(Bitmap bitmap);//计算灰度值的方法
 
+<<<<<<< HEAD
     public native int[] getCirclePicture(int [] buf,int w,int h);//尝试方法
 
+=======
+>>>>>>> 9dd4643fc2533bd4d7bde49850ab5032ee8169b9
 }
